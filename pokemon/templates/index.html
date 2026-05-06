@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PokéTeam AI</title>
+</head>
+<body>
+    <h1>PokéTeam AI</h1>
+    <p>Generate a Pokémon team based on playstyle, type effectiveness, moves, and legendary limits.</p>
+
+    <form method="POST">
+        <label>Choose Pokémon:</label>
+        <input type="text" name="pokemon" placeholder="charizard" required>
+
+        <label>Playstyle:</label>
+        <select name="playstyle">
+            <option value="balanced">Balanced</option>
+            <option value="offense">Hyper Offense</option>
+            <option value="stall">Stall</option>
+            <option value="tank">Tank</option>
+        </select>
+
+        <label>Max Legendaries:</label>
+        <select name="max_legendaries">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+        </select>
+
+        <button type="submit">Generate Team</button>
+    </form>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    {% if team %}
+        <h2>Recommended Team</h2>
+
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Name</th>
+                <th>Types</th>
+                <th>Stats</th>
+                <th>Role</th>
+                <th>Weaknesses</th>
+                <th>Moves</th>
+                <th>Legendary</th>
+                <th>Score</th>
+            </tr>
+
+            {% for pokemon in team %}
+            <tr>
+                <td>{{ pokemon.name }}</td>
+
+                <td>
+                    {{ pokemon.type1 }}
+                    {% if pokemon.type2 == pokemon.type2 %}
+                        / {{ pokemon.type2 }}
+                    {% endif %}
+                </td>
+
+                <td>
+                    HP: {{ pokemon.hp }}<br>
+                    Atk: {{ pokemon.attack }}<br>
+                    Def: {{ pokemon.defense }}<br>
+                    SpA: {{ pokemon.sp_attack }}<br>
+                    SpD: {{ pokemon.sp_defense }}<br>
+                    Spe: {{ pokemon.speed }}
+                </td>
+
+                <td>{{ pokemon.role }}</td>
+
+                <td>{{ pokemon.weaknesses | join(", ") }}</td>
+
+                <td>{{ pokemon.recommended_moves | join(", ") }}</td>
+
+                <td>{{ pokemon.is_legendary }}</td>
+
+                <td>{{ pokemon.team_score }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</body>
+</html>

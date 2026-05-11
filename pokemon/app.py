@@ -3,7 +3,9 @@ from flask import Flask, render_template, request
 from recommender import (
     load_data,
     recommend_teammates,
-    add_movesets_to_team
+    add_movesets_to_team,
+    summarize_team,
+    add_reasons_to_team
 )
 
 app = Flask(__name__)
@@ -14,6 +16,7 @@ df = load_data()
 @app.route("/", methods=["GET", "POST"])
 def index():
     team = None
+    summary = None
     error = None
 
     if request.method == "POST":
@@ -33,26 +36,35 @@ def index():
         else:
             result = add_movesets_to_team(result, df)
 
-            display_columns = [
-                "name",
-                "type1",
-                "type2",
-                "hp",
-                "attack",
-                "defense",
-                "sp_attack",
-                "sp_defense",
-                "speed",
-                "role",
-                "weaknesses",
-                "recommended_moves",
-                "is_legendary",
-                "team_score"
-            ]
+            summary = summarize_team(result, playstyle)
 
+            result = add_reasons_to_team(result, playstyle)
+
+            display_columns = [
+            "name",
+            "type1",
+            "type2",
+            "hp",
+            "attack",
+            "defense",
+            "sp_attack",
+            "sp_defense",
+            "speed",
+            "role",
+            "weaknesses",
+            "recommended_moves",
+            "is_legendary",
+            "reason"
+        ]
+            result = result.where(result.notna(), None)
             team = result[display_columns].to_dict(orient="records")
 
-    return render_template("index.html", team=team, error=error)
+    return render_template(
+        "index.html",
+        team=team,
+        summary=summary,
+        error=error
+    )
 
 
 if __name__ == "__main__":

@@ -2,10 +2,16 @@
 <html>
 <head>
     <title>PokéTeam AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
-    <h1>PokéTeam AI</h1>
-    <p>Generate a Pokémon team based on playstyle, type effectiveness, moves, and legendary limits.</p>
+<div class="container">
+
+    <div class="header">
+        <h1>PokéTeam AI</h1>
+        <p>Generate a Pokémon team based on playstyle, type effectiveness, moves, and legendary limits.</p>
+    </div>
 
     <form method="POST">
         <label>Choose Pokémon:</label>
@@ -31,56 +37,82 @@
     </form>
 
     {% if error %}
-        <p style="color: red;">{{ error }}</p>
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if summary %}
+        <div class="summary">
+            <h2>Team Summary</h2>
+
+            <div class="summary-grid">
+                <div class="summary-box"><strong>Playstyle:</strong><br>{{ summary.playstyle }}</div>
+                <div class="summary-box"><strong>Legendaries:</strong><br>{{ summary.legendary_count }}</div>
+                <div class="summary-box"><strong>Average Speed:</strong><br>{{ summary.average_speed }}</div>
+                <div class="summary-box"><strong>Average Attack:</strong><br>{{ summary.average_attack }}</div>
+                <div class="summary-box"><strong>Average Special Attack:</strong><br>{{ summary.average_sp_attack }}</div>
+                <div class="summary-box"><strong>Average Bulk:</strong><br>{{ summary.average_bulk }}</div>
+            </div>
+
+            <h3>Common Weaknesses</h3>
+            {% for weakness, count in summary.common_weaknesses.items() %}
+                <span class="tag">{{ weakness }}: {{ count }}</span>
+            {% endfor %}
+
+            <h3>Role Distribution</h3>
+            {% for role, count in summary.role_distribution.items() %}
+                <span class="tag">{{ role }}: {{ count }}</span>
+            {% endfor %}
+        </div>
     {% endif %}
 
     {% if team %}
         <h2>Recommended Team</h2>
 
-        <table border="1" cellpadding="8">
-            <tr>
-                <th>Name</th>
-                <th>Types</th>
-                <th>Stats</th>
-                <th>Role</th>
-                <th>Weaknesses</th>
-                <th>Moves</th>
-                <th>Legendary</th>
-                <th>Score</th>
-            </tr>
-
+        <div class="team-grid">
             {% for pokemon in team %}
-            <tr>
-                <td>{{ pokemon.name }}</td>
+                <div class="pokemon-card">
+                    <h3>{{ pokemon.name }}</h3>
 
-                <td>
-                    {{ pokemon.type1 }}
-                    {% if pokemon.type2 == pokemon.type2 %}
-                        / {{ pokemon.type2 }}
-                    {% endif %}
-                </td>
+                    <p>
+                        <strong>Types:</strong>
+                        <span class="tag">{{ pokemon.type1 }}</span>
+                        {% if pokemon.type2 %}
+                            <span class="tag">{{ pokemon.type2 }}</span>
+                        {% endif %}
+                    </p>
 
-                <td>
-                    HP: {{ pokemon.hp }}<br>
-                    Atk: {{ pokemon.attack }}<br>
-                    Def: {{ pokemon.defense }}<br>
-                    SpA: {{ pokemon.sp_attack }}<br>
-                    SpD: {{ pokemon.sp_defense }}<br>
-                    Spe: {{ pokemon.speed }}
-                </td>
+                    <p><strong>Role:</strong> {{ pokemon.role }}</p>
+                    <p><strong>Legendary:</strong> {{ pokemon.is_legendary }}</p>
 
-                <td>{{ pokemon.role }}</td>
+                    <h4>Stats</h4>
+                    <ul>
+                        <li>HP: {{ pokemon.hp }}</li>
+                        <li>Attack: {{ pokemon.attack }}</li>
+                        <li>Defense: {{ pokemon.defense }}</li>
+                        <li>Special Attack: {{ pokemon.sp_attack }}</li>
+                        <li>Special Defense: {{ pokemon.sp_defense }}</li>
+                        <li>Speed: {{ pokemon.speed }}</li>
+                    </ul>
 
-                <td>{{ pokemon.weaknesses | join(", ") }}</td>
+                    <h4>Weaknesses</h4>
+                    {% for weakness in pokemon.weaknesses %}
+                        <span class="tag">{{ weakness }}</span>
+                    {% endfor %}
 
-                <td>{{ pokemon.recommended_moves | join(", ") }}</td>
+                    <h4>Recommended Moves</h4>
+                    {% for move in pokemon.recommended_moves %}
+                        <span class="tag">{{ move }}</span>
+                    {% endfor %}
 
-                <td>{{ pokemon.is_legendary }}</td>
-
-                <td>{{ pokemon.team_score }}</td>
-            </tr>
+                    <div class="reason">
+                        <strong>Why this Pokémon?</strong><br>
+                        {{ pokemon.reason }}
+                    </div>
+                </div>
             {% endfor %}
-        </table>
+        </div>
     {% endif %}
+
+</div>
 </body>
 </html>

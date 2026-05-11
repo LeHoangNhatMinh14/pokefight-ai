@@ -239,3 +239,136 @@ def add_movesets_to_team(team, df, max_moves=4):
     team["recommended_moves"] = recommended_moves
 
     return team
+
+def summarize_team(team, playstyle):
+    all_weaknesses = []
+    all_types = []
+    roles = []
+
+    for _, row in team.iterrows():
+        all_weaknesses.extend(row["weaknesses"])
+        all_types.append(row["type1"])
+
+        if has_type2(row["type2"]):
+            all_types.append(row["type2"])
+
+        roles.append(row["role"])
+
+    weakness_counts = pd.Series(all_weaknesses).value_counts().to_dict()
+    type_counts = pd.Series(all_types).value_counts().to_dict()
+    role_counts = pd.Series(roles).value_counts().to_dict()
+
+    legendary_count = int(team["is_legendary"].sum())
+    average_speed = round(team["speed"].mean(), 2)
+    average_attack = round(team["attack"].mean(), 2)
+    average_sp_attack = round(team["sp_attack"].mean(), 2)
+    average_bulk = round((team["hp"].mean() + team["defense"].mean() + team["sp_defense"].mean()) / 3, 2)
+
+    return {
+        "playstyle": playstyle,
+        "legendary_count": legendary_count,
+        "average_speed": average_speed,
+        "average_attack": average_attack,
+        "average_sp_attack": average_sp_attack,
+        "average_bulk": average_bulk,
+        "type_distribution": type_counts,
+        "common_weaknesses": weakness_counts,
+        "role_distribution": role_counts
+    }
+
+def format_name(name):
+    return str(name).replace("-", " ").title()
+
+
+def get_pokemon_types(row):
+    types = [row["type1"]]
+
+    if has_type2(row["type2"]):
+        types.append(row["type2"])
+
+    return types
+
+
+def explain_choice(row, previous_team, playstyle):
+    name = format_name(row["name"])
+    role = row["role"]
+    pokemon_types = get_pokemon_types(row)
+    pokemon_weaknesses = set(row["weaknesses"])
+
+    if not previous_team:
+        return (
+            f"{name} is the anchor Pokémon for this team. "
+            f"The rest of the team is built around supporting its typing, role, and weaknesses."
+        )
+
+    previous_types = set()
+    previous_weaknesses = set()
+    previous_roles = []
+
+    for member in previous_team:
+        previous_types.update(get_pokemon_types(member))
+        previous_weaknesses.update(member["weaknesses"])
+        previous_roles.append(member["role"])
+
+    new_types = [t for t in pokemon_types if t not in previous_types]
+    weakness_overlap = len(pokemon_weaknesses.intersection(previous_weaknesses))
+
+    reasons = []
+
+    if new_types:
+        reasons.append(f"adds {', '.join(new_types)} typing to the team")
+
+    if weakness_overlap == 0:
+        reasons.append("does not repeat the current team's main weaknesses")
+    elif weakness_overlap == 1:
+        reasons.append("only slightly overlaps with the current team's weaknesses")
+    else:
+        reasons.append("still fits despite some shared weaknesses because of its stats and role")
+
+    if role not in previous_roles:
+        reasons.append(f"adds a new role as a {role}")
+    else:
+        reasons.append(f"supports the existing {role} role")
+
+    if playstyle == "offense":
+        if row["speed"] >= 100:
+            reasons.append("fits the hyper offense playstyle because it has high speed")
+        elif max(row["attack"], row["sp_attack"]) >= 100:
+            reasons.append("fits the hyper offense playstyle because it has strong attacking stats")
+
+    elif playstyle == "stall":
+        bulk_score = (row["hp"] + row["defense"] + row["sp_defense"]) / 3
+
+        if bulk_score >= 80:
+            reasons.append("fits the stall playstyle because it has strong defensive stats")
+        else:
+            reasons.append("helps the stall team by adding useful defensive coverage")
+
+    elif playstyle == "tank":
+        bulk_score = (row["hp"] + row["defense"] + row["sp_defense"]) / 3
+        attack_score = max(row["attack"], row["sp_attack"])
+
+        if attack_score >= 100 and bulk_score >= 70:
+            reasons.append("fits the tank playstyle because it can take hits while still dealing damage")
+        elif attack_score >= 100:
+            reasons.append("fits the tank playstyle because it hits hard")
+
+    else:
+        reasons.append("fits the balanced playstyle by contributing useful stats and team coverage")
+
+    return f"{name} is recommended because it " + "; ".join(reasons) + "."
+
+
+def add_reasons_to_team(team, playstyle):
+    team = team.copy()
+    reasons = []
+    previous_team = []
+
+    for _, row in team.iterrows():
+        reason = explain_choice(row, previous_team, playstyle)
+        reasons.append(reason)
+        previous_team.append(row.to_dict())
+
+    team["reason"] = reasons
+
+    return team

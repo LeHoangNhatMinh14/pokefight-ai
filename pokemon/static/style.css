@@ -1,0 +1,113 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 30px;
+    color: #222;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+}
+
+.header {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+form {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+input, select, button {
+    padding: 8px;
+    margin: 6px 10px 6px 0;
+}
+
+button {
+    background: #222;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #444;
+}
+
+.summary {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.summary-box {
+    background: #f8f8f8;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.pokemon-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.pokemon-card h3 {
+    margin-top: 0;
+    text-transform: capitalize;
+}
+
+.tag {
+    display: inline-block;
+    background: #eee;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin: 2px;
+    font-size: 13px;
+}
+
+.reason {
+    background: #f8f8f8;
+    padding: 10px;
+    border-left: 4px solid #222;
+    margin-top: 12px;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}
+
+ul {
+    margin-top: 5px;
+}

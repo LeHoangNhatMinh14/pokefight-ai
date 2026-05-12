@@ -1,8 +1,9 @@
 import ast
 from functools import lru_cache
-
 import pandas as pd
 import requests
+from typing import List, Dict, Optional
+from synergy_scorer import PokemonSynergyScorer
 
 
 def parse_list(value):
@@ -47,91 +48,224 @@ def find_pokemon(pokemon_name):
     return result.iloc[0].to_dict()
 
 
-def recommend_teammates(selected_pokemon, df, playstyle="balanced", team_size=6, max_legendaries=0):
+def recommend_teammates(selected_pokemon: str, df: pd.DataFrame, playstyle: str = "balanced",
+                       team_size: int = 6, max_legendaries: int = 0,
+                       use_synergy: bool = True, lookahead_depth: int = 2) -> pd.DataFrame:
+    """
+    Recommend Pokemon teammates using synergy-based scoring with lookahead.
+
+    Args:
+        selected_pokemon: Name of the starting Pokemon
+        df: Pokemon DataFrame
+        playstyle: "balanced", "offense", "stall", "tank"
+        team_size: Target team size
+        max_legendaries: Maximum legendary Pokemon allowed
+        use_synergy: Whether to use synergy scoring
+        lookahead_depth: How many picks ahead to evaluate (0 = greedy, 1+ = lookahead)
+
+    Returns:
+        DataFrame with recommended team
+    """
     selected_row = df[df["name"].str.lower() == selected_pokemon.lower()]
 
     if selected_row.empty:
-        return f"{selected_pokemon} not found in dataset."
+        raise ValueError(f"{selected_pokemon} not found in dataset.")
 
-    if playstyle == "offensive":
-        playstyle = "offense"
+    # Initialize synergy scorer
+    synergy_scorer = PokemonSynergyScorer(df) if use_synergy else None
 
+    # Start with selected Pokemon
     team = [selected_row.iloc[0].to_dict()]
-    candidates = df[df["name"].str.lower() != selected_pokemon.lower()].copy()
+    available_pokemon = df[df["name"].str.lower() != selected_pokemon.lower()].copy()
 
-    while len(team) < team_size:
-        team_weaknesses = set()
-        team_types = []
-        team_roles = []
+    # Apply legendary filter
+    legendary_count = sum(1 for member in team if member.get("is_legendary", False))
+    if legendary_count >= max_legendaries:
+        available_pokemon = available_pokemon[~available_pokemon["is_legendary"]]
 
-        for member in team:
-            team_weaknesses.update(member["weaknesses"])
-            team_roles.append(member["role"])
+    while len(team) < team_size and not available_pokemon.empty:
+        best_candidate = None
+        best_score = float('-inf')
 
-            team_types.append(member["type1"])
+        # Evaluate each candidate
+        for _, candidate in available_pokemon.iterrows():
+            candidate_dict = candidate.to_dict()
 
-            if has_type2(member["type2"]):
-                team_types.append(member["type2"])
+            # Check legendary limit
+            if candidate_dict.get("is_legendary", False):
+                temp_legendary_count = legendary_count + 1
+                if temp_legendary_count > max_legendaries:
+                    continue
 
-        legendary_count = sum(1 for member in team if member["is_legendary"])
+            # Calculate base score for this candidate
+            score = _score_candidate_for_team(candidate_dict, team, playstyle, synergy_scorer)
 
-        if legendary_count >= max_legendaries:
-            candidates = candidates[candidates["is_legendary"] == False]
+            # Lookahead evaluation
+            if lookahead_depth > 0:
+                future_score = _evaluate_future_picks(
+                    candidate_dict, team, available_pokemon, playstyle,
+                    synergy_scorer, lookahead_depth, max_legendaries
+                )
+                score += future_score * 0.3  # Weight future considerations
 
-        if candidates.empty:
-            break
+            if score > best_score:
+                best_score = score
+                best_candidate = candidate_dict
 
-        def score_candidate(row):
-            weaknesses = set(row["weaknesses"])
-            weakness_overlap = len(team_weaknesses.intersection(weaknesses))
+        if best_candidate is None:
+            break  # No valid candidates found
 
-            type_duplication = 0
+        # Add to team
+        team.append(best_candidate)
+        available_pokemon = available_pokemon[available_pokemon["name"] != best_candidate["name"]]
 
-            if row["type1"] in team_types:
-                type_duplication += 1
-
-            if has_type2(row["type2"]) and row["type2"] in team_types:
-                type_duplication += 1
-
-            role_duplication = team_roles.count(row["role"])
-
-            atk = row["attack"]
-            spa = row["sp_attack"]
-            speed = row["speed"]
-            hp = row["hp"]
-            defense = row["defense"]
-            spdef = row["sp_defense"]
-
-            if playstyle == "offense":
-                stat_score = (speed * 0.5) + (max(atk, spa) * 0.5)
-
-            elif playstyle == "stall":
-                stat_score = (hp * 0.4) + (defense * 0.3) + (spdef * 0.3)
-
-            elif playstyle == "tank":
-                stat_score = (max(atk, spa) * 0.5) + (hp * 0.3) + (defense * 0.2)
-
-            else:
-                stat_score = (atk + spa + speed + hp + defense + spdef) / 6
-
-            score = (
-                weakness_overlap * 3
-                + type_duplication * 2
-                + role_duplication * 2
-                - stat_score / 50
-            )
-
-            return score
-
-        candidates["team_score"] = candidates.apply(score_candidate, axis=1)
-        candidates = candidates.sort_values(by="team_score", ascending=True)
-
-        next_pick = candidates.iloc[0]
-        team.append(next_pick.to_dict())
-
-        candidates = candidates[candidates["name"] != next_pick["name"]]
+        # Update legendary count
+        if best_candidate.get("is_legendary", False):
+            legendary_count += 1
 
     return pd.DataFrame(team)
+
+
+def _score_candidate_for_team(candidate: Dict, current_team: List[Dict],
+                             playstyle: str, synergy_scorer: Optional[PokemonSynergyScorer]) -> float:
+    """
+    Score how well a candidate fits the current team.
+    Higher scores = better fit.
+    """
+    if not current_team:
+        return 1.0  # Perfect score for empty team
+
+    score = 0.0
+
+    # Synergy-based scoring
+    if synergy_scorer:
+        synergy_scores = synergy_scorer.score_candidate_for_team(candidate, current_team)
+        score += synergy_scores['overall'] * 0.35  # 35% weight on synergy
+
+    # Traditional scoring (weakness coverage, type diversity, etc.)
+    traditional_score = _calculate_traditional_score(candidate, current_team, playstyle)
+    score += traditional_score * 0.65  # 65% weight on traditional metrics (more diversity)
+
+    return score
+
+
+def _calculate_traditional_score(candidate: Dict, current_team: List[Dict], playstyle: str) -> float:
+    """Calculate traditional team-building score (weakness coverage, diversity, etc.)"""
+    team_weaknesses = set()
+    team_types = set()
+    team_roles = []
+
+    for member in current_team:
+        team_weaknesses.update(member.get("weaknesses", []))
+        team_roles.append(member.get("role", ""))
+
+        team_types.add(member["type1"])
+        if has_type2(member.get("type2")):
+            team_types.add(member["type2"])
+
+    # Weakness coverage (higher = better)
+    candidate_weaknesses = set(candidate.get("weaknesses", []))
+    weakness_overlap = len(team_weaknesses.intersection(candidate_weaknesses))
+    weakness_score = 1.0 - (weakness_overlap / max(1, len(team_weaknesses)))
+
+    # Type diversity (lower duplication = higher score)
+    type_duplication = 0
+    if candidate["type1"] in team_types:
+        type_duplication += 1
+    if has_type2(candidate.get("type2")) and candidate["type2"] in team_types:
+        type_duplication += 1
+    type_score = 1.0 - (type_duplication * 0.3)  # Penalty for duplication
+
+    # Role diversity
+    candidate_role = candidate.get("role", "")
+    role_count = team_roles.count(candidate_role)
+    role_score = 1.0 - (role_count * 0.2)  # Penalty for role duplication
+
+    # Stat-based scoring for playstyle
+    stat_score = _calculate_stat_score(candidate, playstyle)
+
+    # Combine scores (weighted) - prioritize diversity
+    final_score = (
+        weakness_score * 0.35 +
+        type_score * 0.35 +
+        role_score * 0.25 +
+        stat_score * 0.05
+    )
+
+    return final_score
+
+
+def _calculate_stat_score(candidate: Dict, playstyle: str) -> float:
+    """Calculate stat score based on playstyle preference."""
+    atk = candidate.get("attack", 0)
+    spa = candidate.get("sp_attack", 0)
+    speed = candidate.get("speed", 0)
+    hp = candidate.get("hp", 0)
+    defense = candidate.get("defense", 0)
+    spdef = candidate.get("sp_defense", 0)
+
+    if playstyle == "offense":
+        return (speed * 0.5 + max(atk, spa) * 0.5) / 100
+    elif playstyle == "stall":
+        return (hp * 0.4 + defense * 0.3 + spdef * 0.3) / 100
+    elif playstyle == "tank":
+        return (max(atk, spa) * 0.5 + hp * 0.3 + defense * 0.2) / 100
+    else:  # balanced
+        return (atk + spa + speed + hp + defense + spdef) / 600
+
+    return 0.5  # Default
+
+
+def _evaluate_future_picks(candidate: Dict, current_team: List[Dict],
+                          available_pokemon: pd.DataFrame, playstyle: str,
+                          synergy_scorer: Optional[PokemonSynergyScorer],
+                          depth: int, max_legendaries: int) -> float:
+    """
+    Evaluate the quality of future picks if this candidate is chosen.
+    Returns a score bonus based on future team quality.
+    """
+    if depth <= 0:
+        return 0.0
+
+    # Simulate adding candidate to team
+    future_team = current_team + [candidate]
+    future_available = available_pokemon[available_pokemon["name"] != candidate["name"]].copy()
+
+    # Apply legendary filter
+    legendary_count = sum(1 for member in future_team if member.get("is_legendary", False))
+    if legendary_count >= max_legendaries:
+        future_available = future_available[~future_available["is_legendary"]]
+
+    if future_available.empty:
+        return 0.0
+
+    # Evaluate best future pick
+    best_future_score = float('-inf')
+
+    # Sample top candidates to avoid excessive computation
+    top_candidates = future_available.head(min(10, len(future_available)))
+
+    for _, future_candidate in top_candidates.iterrows():
+        future_dict = future_candidate.to_dict()
+
+        # Check legendary limit
+        if future_dict.get("is_legendary", False):
+            temp_legendary_count = legendary_count + 1
+            if temp_legendary_count > max_legendaries:
+                continue
+
+        future_score = _score_candidate_for_team(future_dict, future_team, playstyle, synergy_scorer)
+
+        # Recursive lookahead
+        if depth > 1:
+            future_score += _evaluate_future_picks(
+                future_dict, future_team, future_available, playstyle,
+                synergy_scorer, depth - 1, max_legendaries
+            ) * 0.5  # Diminishing weight
+
+        best_future_score = max(best_future_score, future_score)
+
+    return best_future_score if best_future_score != float('-inf') else 0.0
 
 
 @lru_cache(maxsize=10000)

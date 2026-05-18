@@ -17,7 +17,29 @@
         <label>Choose Pokémon:</label>
         <input type="text" name="pokemon" placeholder="charizard" required>
 
-        <label>Playstyle:</label>
+        <label>Mode:</label>
+        <select name="mode">
+            {% if chaos_available %}
+                <option value="chaos">Smogon usage (Gen 1–6, all tiers)</option>
+            {% endif %}
+            <option value="synergy">Type / role synergy (no Smogon data)</option>
+        </select>
+
+        {% if chaos_available %}
+            <label>Metagame (Smogon mode):</label>
+            <select name="metagame">
+                <option value="">Auto-detect best fit</option>
+                {% for gen, tier in metagames %}
+                    <option value="{{ gen }}|{{ tier }}">Gen {{ gen }} {{ tier|upper }}</option>
+                {% endfor %}
+            </select>
+        {% else %}
+            {% if chaos_message %}
+                <p class="error" style="font-size: 0.9em">{{ chaos_message }}</p>
+            {% endif %}
+        {% endif %}
+
+        <label>Playstyle (synergy mode only):</label>
         <select name="playstyle">
             <option value="balanced">Balanced</option>
             <option value="offense">Hyper Offense</option>
@@ -27,6 +49,7 @@
 
         <label>Max Legendaries:</label>
         <select name="max_legendaries">
+            <option value="">Any</option>
             <option value="0">0</option>
             <option value="1">1</option>
             <option value="2">2</option>
@@ -83,6 +106,18 @@
 
                     <p><strong>Role:</strong> {{ pokemon.role }}</p>
                     <p><strong>Legendary:</strong> {{ pokemon.is_legendary }}</p>
+                    {% if pokemon.usage is defined and pokemon.usage %}
+                        <p><strong>Usage:</strong> {{ (pokemon.usage * 100)|round(1) }}%</p>
+                    {% endif %}
+                    {% if pokemon.item %}
+                        <p><strong>Item:</strong> {{ pokemon.item }}</p>
+                    {% endif %}
+                    {% if pokemon.ability %}
+                        <p><strong>Ability:</strong> {{ pokemon.ability }}</p>
+                    {% endif %}
+                    {% if pokemon.spread %}
+                        <p><strong>Spread:</strong> <code>{{ pokemon.spread }}</code></p>
+                    {% endif %}
 
                     <h4>Stats</h4>
                     <ul>

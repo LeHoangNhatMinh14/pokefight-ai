@@ -1,0 +1,155 @@
+{
+  "info": {
+    "team type": null,
+    "cutoff": 1500,
+    "cutoff deviation": 0,
+    "metagame": "gen3ou",
+    "number of battles": 50000
+  },
+  "data": {
+    "Salamence": {
+      "Raw count": 21000,
+      "usage": 0.42,
+      "Viability Ceiling": [5, 9000, 0, 0],
+      "Abilities": {"Intimidate": 21000},
+      "Items": {"Choice Band": 14000, "Lum Berry": 4500, "Leftovers": 2500},
+      "Spreads": {"Adamant:0/252/0/0/4/252": 8000, "Naive:0/252/0/4/0/252": 5000},
+      "Moves": {"Earthquake": 19500, "Rock Slide": 14000, "Dragon Dance": 11000, "Hidden Power Flying": 6000, "Brick Break": 5000, "Fire Blast": 4000},
+      "Teammates": {"Tyranitar": 11000, "Skarmory": 9500, "Blissey": 8000, "Metagross": 7500, "Swampert": 7000, "Jirachi": 6000, "Snorlax": 5500},
+      "Checks and Counters": {"Skarmory": [0.55, 0.7, 0.3], "Suicune": [0.5, 0.6, 0.35]},
+      "Happiness": {"255": 21000}
+    },
+    "Tyranitar": {
+      "Raw count": 18000,
+      "usage": 0.36,
+      "Viability Ceiling": [5, 8500, 0, 0],
+      "Abilities": {"Sand Stream": 18000},
+      "Items": {"Leftovers": 9000, "Choice Band": 5000, "Lum Berry": 2500},
+      "Spreads": {"Adamant:124/252/0/0/0/132": 7000, "Careful:252/0/0/0/216/40": 4500},
+      "Moves": {"Rock Slide": 16000, "Earthquake": 14000, "Pursuit": 10000, "Crunch": 5000, "Fire Blast": 4500, "Dragon Dance": 4000},
+      "Teammates": {"Salamence": 11000, "Skarmory": 10000, "Blissey": 9000, "Metagross": 8000, "Swampert": 7000, "Jirachi": 5500, "Gengar": 4500},
+      "Checks and Counters": {"Swampert": [0.6, 0.7, 0.35], "Salamence": [0.4, 0.55, 0.45]},
+      "Happiness": {"255": 18000}
+    },
+    "Skarmory": {
+      "Raw count": 17500,
+      "usage": 0.35,
+      "Viability Ceiling": [5, 8000, 0, 0],
+      "Abilities": {"Sturdy": 17500},
+      "Items": {"Leftovers": 16000, "Shed Shell": 1000},
+      "Spreads": {"Impish:252/0/216/0/40/0": 9000, "Careful:252/0/0/0/216/40": 4500},
+      "Moves": {"Spikes": 15500, "Roar": 11000, "Drill Peck": 9500, "Toxic": 7500, "Rest": 5000, "Whirlwind": 4000},
+      "Teammates": {"Blissey": 13000, "Tyranitar": 10000, "Metagross": 8500, "Swampert": 8000, "Salamence": 9500, "Jirachi": 6000, "Snorlax": 4500},
+      "Checks and Counters": {"Magneton": [0.7, 0.85, 0.2], "Heatran": [0.5, 0.65, 0.4]},
+      "Happiness": {"255": 17500}
+    },
+    "Blissey": {
+      "Raw count": 16500,
+      "usage": 0.33,
+      "Viability Ceiling": [5, 7500, 0, 0],
+      "Abilities": {"Natural Cure": 13000, "Serene Grace": 3500},
+      "Items": {"Leftovers": 15000, "Choice Band": 500, "Quick Claw": 1000},
+      "Spreads": {"Bold:252/0/252/0/4/0": 9000, "Calm:252/0/4/0/252/0": 5000},
+      "Moves": {"Soft-Boiled": 16000, "Toxic": 12500, "Ice Beam": 10000, "Seismic Toss": 9500, "Aromatherapy": 5000, "Thunder Wave": 4500},
+      "Teammates": {"Skarmory": 13000, "Tyranitar": 9000, "Swampert": 8000, "Metagross": 6500, "Salamence": 8000, "Jirachi": 5500, "Snorlax": 4000},
+      "Checks and Counters": {"Tyranitar": [0.55, 0.7, 0.3], "Gengar": [0.45, 0.6, 0.4]},
+      "Happiness": {"255": 16500}
+    },
+    "Metagross": {
+      "Raw count": 15000,
+      "usage": 0.30,
+      "Viability Ceiling": [5, 7000, 0, 0],
+      "Abilities": {"Clear Body": 15000},
+      "Items": {"Choice Band": 9000, "Leftovers": 4500, "Lum Berry": 1500},
+      "Spreads": {"Adamant:0/252/0/0/4/252": 8500, "Adamant:252/252/0/0/0/4": 3000},
+      "Moves": {"Meteor Mash": 14000, "Earthquake": 13000, "Explosion": 10000, "Rock Slide": 5500, "Hidden Power Fire": 3500, "Agility": 2500},
+      "Teammates": {"Salamence": 7500, "Tyranitar": 8000, "Skarmory": 8500, "Swampert": 7000, "Blissey": 6500, "Jirachi": 4500, "Gengar": 3500},
+      "Checks and Counters": {"Swampert": [0.5, 0.65, 0.4], "Skarmory": [0.55, 0.7, 0.3]},
+      "Happiness": {"255": 15000}
+    },
+    "Swampert": {
+      "Raw count": 14500,
+      "usage": 0.29,
+      "Viability Ceiling": [5, 6500, 0, 0],
+      "Abilities": {"Torrent": 14500},
+      "Items": {"Leftovers": 12500, "Choice Band": 1500, "Chesto Berry": 500},
+      "Spreads": {"Relaxed:252/0/252/0/4/0": 7500, "Adamant:252/252/0/0/4/0": 3500},
+      "Moves": {"Earthquake": 13500, "Ice Beam": 10000, "Surf": 8500, "Hydro Pump": 4500, "Hidden Power Grass": 4000, "Protect": 3500},
+      "Teammates": {"Skarmory": 8000, "Blissey": 8000, "Tyranitar": 7000, "Salamence": 7000, "Metagross": 7000, "Jirachi": 4000, "Gengar": 3500},
+      "Checks and Counters": {"Celebi": [0.55, 0.7, 0.35], "Salamence": [0.45, 0.6, 0.45]},
+      "Happiness": {"255": 14500}
+    },
+    "Jirachi": {
+      "Raw count": 11000,
+      "usage": 0.22,
+      "Viability Ceiling": [4, 5000, 0, 0],
+      "Abilities": {"Serene Grace": 11000},
+      "Items": {"Leftovers": 9500, "Choice Band": 1000, "Lum Berry": 500},
+      "Spreads": {"Careful:252/0/0/0/216/40": 5000, "Jolly:0/252/0/0/4/252": 3000},
+      "Moves": {"Wish": 8500, "Body Slam": 7000, "Psychic": 5500, "Iron Head": 5000, "Thunder Wave": 4500, "Substitute": 3500},
+      "Teammates": {"Salamence": 6000, "Skarmory": 6000, "Blissey": 5500, "Tyranitar": 5500, "Metagross": 4500, "Swampert": 4000, "Gengar": 3000},
+      "Checks and Counters": {"Tyranitar": [0.6, 0.75, 0.3], "Magneton": [0.5, 0.65, 0.4]},
+      "Happiness": {"255": 11000}
+    },
+    "Snorlax": {
+      "Raw count": 9500,
+      "usage": 0.19,
+      "Viability Ceiling": [4, 4500, 0, 0],
+      "Abilities": {"Thick Fat": 6000, "Immunity": 3500},
+      "Items": {"Leftovers": 9000, "Choice Band": 500},
+      "Spreads": {"Adamant:188/144/0/0/176/0": 5000, "Careful:200/0/0/0/252/56": 2500},
+      "Moves": {"Body Slam": 8500, "Earthquake": 7000, "Self-Destruct": 4500, "Curse": 5000, "Rest": 4000, "Shadow Ball": 3500},
+      "Teammates": {"Skarmory": 4500, "Salamence": 5500, "Tyranitar": 4500, "Blissey": 4000, "Metagross": 3500, "Swampert": 3000, "Gengar": 3500},
+      "Checks and Counters": {"Skarmory": [0.7, 0.85, 0.2], "Salamence": [0.5, 0.65, 0.4]},
+      "Happiness": {"255": 9500}
+    },
+    "Gengar": {
+      "Raw count": 9000,
+      "usage": 0.18,
+      "Viability Ceiling": [4, 4000, 0, 0],
+      "Abilities": {"Levitate": 9000},
+      "Items": {"Leftovers": 5500, "Choice Band": 2000, "Lum Berry": 1500},
+      "Spreads": {"Timid:0/0/0/252/4/252": 5500, "Modest:0/0/0/252/4/252": 2500},
+      "Moves": {"Thunderbolt": 7500, "Ice Punch": 5500, "Hypnosis": 5000, "Explosion": 5500, "Will-O-Wisp": 3500, "Fire Punch": 3000},
+      "Teammates": {"Tyranitar": 4500, "Blissey": 4500, "Skarmory": 4000, "Salamence": 4500, "Metagross": 3500, "Swampert": 3500, "Jirachi": 3000},
+      "Checks and Counters": {"Tyranitar": [0.6, 0.75, 0.3], "Snorlax": [0.5, 0.65, 0.4]},
+      "Happiness": {"255": 9000}
+    },
+    "Celebi": {
+      "Raw count": 6500,
+      "usage": 0.13,
+      "Viability Ceiling": [4, 2800, 0, 0],
+      "Abilities": {"Natural Cure": 6500},
+      "Items": {"Leftovers": 6000, "Lum Berry": 500},
+      "Spreads": {"Calm:252/0/4/0/252/0": 3500, "Modest:0/0/4/252/0/252": 2000},
+      "Moves": {"Psychic": 5500, "Calm Mind": 4500, "Recover": 4500, "Hidden Power Grass": 3500, "Leech Seed": 3000, "Giga Drain": 2500},
+      "Teammates": {"Skarmory": 3500, "Blissey": 3500, "Tyranitar": 3000, "Salamence": 3000, "Swampert": 3500, "Metagross": 2500, "Jirachi": 2000},
+      "Checks and Counters": {"Tyranitar": [0.65, 0.8, 0.25], "Salamence": [0.55, 0.7, 0.35]},
+      "Happiness": {"255": 6500}
+    },
+    "Suicune": {
+      "Raw count": 7500,
+      "usage": 0.15,
+      "Viability Ceiling": [4, 3200, 0, 0],
+      "Abilities": {"Pressure": 7500},
+      "Items": {"Leftovers": 7000, "Chesto Berry": 500},
+      "Spreads": {"Bold:252/0/252/0/4/0": 4000, "Modest:0/0/4/252/0/252": 1500},
+      "Moves": {"Surf": 6500, "Ice Beam": 5500, "Calm Mind": 4500, "Roar": 3500, "Hidden Power Electric": 2500, "Rest": 3000},
+      "Teammates": {"Blissey": 4500, "Skarmory": 4000, "Tyranitar": 3500, "Salamence": 3500, "Metagross": 3000, "Celebi": 2500, "Gengar": 2000},
+      "Checks and Counters": {"Celebi": [0.6, 0.75, 0.3], "Blissey": [0.55, 0.7, 0.35]},
+      "Happiness": {"255": 7500}
+    },
+    "Aerodactyl": {
+      "Raw count": 5000,
+      "usage": 0.10,
+      "Viability Ceiling": [3, 2200, 0, 0],
+      "Abilities": {"Pressure": 4500, "Rock Head": 500},
+      "Items": {"Choice Band": 3000, "Lum Berry": 1500, "Leftovers": 500},
+      "Spreads": {"Jolly:0/252/0/0/4/252": 3500, "Adamant:0/252/0/0/4/252": 1000},
+      "Moves": {"Rock Slide": 4500, "Earthquake": 4000, "Double-Edge": 2500, "Hidden Power Flying": 2000, "Taunt": 1500, "Fire Blast": 1500},
+      "Teammates": {"Tyranitar": 3000, "Salamence": 2500, "Blissey": 2500, "Skarmory": 2000, "Metagross": 2000, "Gengar": 1500, "Snorlax": 1500},
+      "Checks and Counters": {"Skarmory": [0.7, 0.85, 0.2], "Suicune": [0.55, 0.7, 0.35]},
+      "Happiness": {"255": 5000}
+    }
+  }
+}

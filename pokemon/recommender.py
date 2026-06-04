@@ -1,9 +1,109 @@
 import ast
+import hashlib
+import json
+import os
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
+from pathlib import Path
+
 import pandas as pd
 import requests
 from typing import List, Dict, Optional
 from synergy_scorer import PokemonSynergyScorer
+
+
+# ---- PokeAPI disk cache ----
+# fetch_json (kept around for legacy callers) layers a disk cache under its
+# in-process @lru_cache. The synergy fallback path no longer calls PokeAPI
+# at all — see TYPE_TO_MOVES below — so this cache is now mostly insurance.
+POKEAPI_CACHE_DIR = Path(os.environ.get("POKEAPI_CACHE_DIR", "data/cache/pokeapi"))
+
+
+def _pokeapi_cache_path(url: str) -> Path:
+    h = hashlib.sha1(url.encode("utf-8")).hexdigest()
+    return POKEAPI_CACHE_DIR / f"{h}.json"
+
+
+# ---- Offline type → moves table ----
+# Picking a Pokemon outside the Smogon chaos dataset (e.g. Pikachu, Eevee) used
+# to fall back to a PokeAPI lookup that fired ~100 sequential HTTP calls per
+# team member — roughly 600 requests for a 6-mon team. We now derive the
+# "recommended moves" purely from the Pokemon's types using this curated table
+# of strong attacking moves per type. Zero network calls, instant team build.
+TYPE_TO_MOVES: dict[str, list[dict]] = {
+    "normal":   [{"move": "return",        "power": 102, "accuracy": 100},
+                 {"move": "body-slam",     "power":  85, "accuracy": 100},
+                 {"move": "facade",        "power":  70, "accuracy": 100},
+                 {"move": "double-edge",   "power": 120, "accuracy": 100}],
+    "fire":     [{"move": "flamethrower",  "power":  90, "accuracy": 100},
+                 {"move": "fire-blast",    "power": 110, "accuracy":  85},
+                 {"move": "flare-blitz",   "power": 120, "accuracy": 100},
+                 {"move": "heat-wave",     "power":  95, "accuracy":  90}],
+    "water":    [{"move": "surf",          "power":  90, "accuracy": 100},
+                 {"move": "hydro-pump",    "power": 110, "accuracy":  80},
+                 {"move": "scald",         "power":  80, "accuracy": 100},
+                 {"move": "liquidation",   "power":  85, "accuracy": 100}],
+    "electric": [{"move": "thunderbolt",   "power":  90, "accuracy": 100},
+                 {"move": "thunder",       "power": 110, "accuracy":  70},
+                 {"move": "wild-charge",   "power":  90, "accuracy": 100},
+                 {"move": "volt-switch",   "power":  70, "accuracy": 100}],
+    "grass":    [{"move": "leaf-blade",    "power":  90, "accuracy": 100},
+                 {"move": "energy-ball",   "power":  90, "accuracy": 100},
+                 {"move": "giga-drain",    "power":  75, "accuracy": 100},
+                 {"move": "leaf-storm",    "power": 130, "accuracy":  90}],
+    "ice":      [{"move": "ice-beam",      "power":  90, "accuracy": 100},
+                 {"move": "blizzard",      "power": 110, "accuracy":  70},
+                 {"move": "ice-punch",     "power":  75, "accuracy": 100},
+                 {"move": "icicle-crash",  "power":  85, "accuracy":  90}],
+    "fighting": [{"move": "close-combat",  "power": 120, "accuracy": 100},
+                 {"move": "drain-punch",   "power":  75, "accuracy": 100},
+                 {"move": "focus-blast",   "power": 120, "accuracy":  70},
+                 {"move": "brick-break",   "power":  75, "accuracy": 100}],
+    "poison":   [{"move": "sludge-bomb",   "power":  90, "accuracy": 100},
+                 {"move": "gunk-shot",     "power": 120, "accuracy":  80},
+                 {"move": "sludge-wave",   "power":  95, "accuracy": 100},
+                 {"move": "poison-jab",    "power":  80, "accuracy": 100}],
+    "ground":   [{"move": "earthquake",    "power": 100, "accuracy": 100},
+                 {"move": "earth-power",   "power":  90, "accuracy": 100},
+                 {"move": "high-horsepower","power": 95, "accuracy":  95},
+                 {"move": "drill-run",     "power":  80, "accuracy":  95}],
+    "flying":   [{"move": "brave-bird",    "power": 120, "accuracy": 100},
+                 {"move": "hurricane",     "power": 110, "accuracy":  70},
+                 {"move": "air-slash",     "power":  75, "accuracy":  95},
+                 {"move": "dual-wingbeat", "power":  40, "accuracy":  90}],
+    "psychic":  [{"move": "psychic",       "power":  90, "accuracy": 100},
+                 {"move": "psyshock",      "power":  80, "accuracy": 100},
+                 {"move": "zen-headbutt",  "power":  80, "accuracy":  90},
+                 {"move": "future-sight",  "power": 120, "accuracy": 100}],
+    "bug":      [{"move": "u-turn",        "power":  70, "accuracy": 100},
+                 {"move": "bug-buzz",      "power":  90, "accuracy": 100},
+                 {"move": "megahorn",      "power": 120, "accuracy":  85},
+                 {"move": "x-scissor",     "power":  80, "accuracy": 100}],
+    "rock":     [{"move": "stone-edge",    "power": 100, "accuracy":  80},
+                 {"move": "rock-slide",    "power":  75, "accuracy":  90},
+                 {"move": "power-gem",     "power":  80, "accuracy": 100},
+                 {"move": "accelerock",    "power":  40, "accuracy": 100}],
+    "ghost":    [{"move": "shadow-ball",   "power":  80, "accuracy": 100},
+                 {"move": "shadow-claw",   "power":  70, "accuracy": 100},
+                 {"move": "poltergeist",   "power": 110, "accuracy":  90},
+                 {"move": "hex",           "power":  65, "accuracy": 100}],
+    "dragon":   [{"move": "outrage",       "power": 120, "accuracy": 100},
+                 {"move": "draco-meteor",  "power": 130, "accuracy":  90},
+                 {"move": "dragon-claw",   "power":  80, "accuracy": 100},
+                 {"move": "dragon-pulse",  "power":  85, "accuracy": 100}],
+    "dark":     [{"move": "knock-off",     "power":  65, "accuracy": 100},
+                 {"move": "crunch",        "power":  80, "accuracy": 100},
+                 {"move": "dark-pulse",    "power":  80, "accuracy": 100},
+                 {"move": "sucker-punch",  "power":  70, "accuracy": 100}],
+    "steel":    [{"move": "iron-head",     "power":  80, "accuracy": 100},
+                 {"move": "flash-cannon",  "power":  80, "accuracy": 100},
+                 {"move": "meteor-mash",   "power":  90, "accuracy":  90},
+                 {"move": "heavy-slam",    "power":  80, "accuracy": 100}],
+    "fairy":    [{"move": "play-rough",    "power":  90, "accuracy":  90},
+                 {"move": "moonblast",     "power":  95, "accuracy": 100},
+                 {"move": "dazzling-gleam","power":  80, "accuracy": 100},
+                 {"move": "draining-kiss", "power":  50, "accuracy": 100}],
+}
 
 
 def parse_list(value):
@@ -270,9 +370,34 @@ def _evaluate_future_picks(candidate: Dict, current_team: List[Dict],
 
 @lru_cache(maxsize=10000)
 def fetch_json(url):
-    response = requests.get(url)
+    """Fetch a PokeAPI URL, consulting an on-disk JSON cache first.
+
+    Layered cache: @lru_cache (in-process) → disk cache → network. Disk hits
+    are what make team-build with cold in-memory cache fast across restarts.
+    """
+    cache_path = _pokeapi_cache_path(url)
+    if cache_path.exists():
+        try:
+            with cache_path.open("r", encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            pass  # corrupt cache file — fall through and refetch
+
+    response = requests.get(url, timeout=15)
     response.raise_for_status()
-    return response.json()
+    data = response.json()
+
+    try:
+        POKEAPI_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        # Write atomically so a Ctrl-C mid-write doesn't leave a half file.
+        tmp = cache_path.with_suffix(".json.tmp")
+        with tmp.open("w", encoding="utf-8") as f:
+            json.dump(data, f)
+        os.replace(tmp, cache_path)
+    except OSError:
+        pass  # disk write failures must not break the request
+
+    return data
 
 
 @lru_cache(maxsize=1024)
@@ -280,14 +405,19 @@ def get_pokemon_moves(pokemon_name):
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name.lower()}"
     data = fetch_json(url)
 
+    entries = data["moves"]
+    move_urls = [m["move"]["url"] for m in entries]
+    move_names = [m["move"]["name"] for m in entries]
+
+    # Parallel fetch — PokeAPI move detail pages are the bottleneck (~100 per
+    # Pokemon). Threads are fine here because fetch_json is I/O bound and its
+    # disk-write step is short. Warm cache hits skip the network entirely.
+    max_workers = min(16, max(1, len(move_urls)))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        move_data_list = list(executor.map(fetch_json, move_urls))
+
     moves = []
-
-    for move_entry in data["moves"]:
-        move_name = move_entry["move"]["name"]
-        move_url = move_entry["move"]["url"]
-
-        move_data = fetch_json(move_url)
-
+    for move_name, move_data in zip(move_names, move_data_list):
         if move_data["damage_class"]["name"] == "status":
             continue
 
@@ -310,52 +440,76 @@ def score_move(move):
     return move["power"] * (accuracy / 100)
 
 
+# Coverage-move priority order: high-BP, broadly useful attacking types listed
+# first so they fill remaining slots after STAB if the Pokemon's own types
+# don't supply enough moves.
+_COVERAGE_TYPE_ORDER = [
+    "ground", "ice", "fighting", "rock", "fire", "electric",
+    "dark", "ghost", "fairy", "psychic", "water", "grass",
+    "dragon", "steel", "flying", "bug", "poison", "normal",
+]
+
+
 def recommend_moves(pokemon_name, df, max_moves=4):
-    moves = list(get_pokemon_moves(pokemon_name))
-    moves_df = pd.DataFrame(moves)
+    """Recommend up to ``max_moves`` strong attacking moves for a Pokemon.
 
-    if moves_df.empty:
-        return pd.DataFrame()
-
+    Uses the offline ``TYPE_TO_MOVES`` table so there are zero network calls,
+    even for Pokemon that don't appear in any Smogon chaos metagame. Picks
+    one STAB move per Pokemon type first, then fills remaining slots with
+    high-power coverage moves from broadly useful types.
+    """
     pokemon_row = df[df["name"].str.lower() == pokemon_name.lower()]
-
     if pokemon_row.empty:
         return pd.DataFrame()
-
     pokemon_row = pokemon_row.iloc[0]
 
-    pokemon_types = {pokemon_row["type1"]}
+    pokemon_types: list[str] = []
+    t1 = pokemon_row.get("type1")
+    if isinstance(t1, str) and t1:
+        pokemon_types.append(t1.lower())
+    if has_type2(pokemon_row.get("type2")):
+        t2 = pokemon_row.get("type2")
+        if isinstance(t2, str) and t2.lower() not in pokemon_types:
+            pokemon_types.append(t2.lower())
 
-    if has_type2(pokemon_row["type2"]):
-        pokemon_types.add(pokemon_row["type2"])
+    selected: list[dict] = []
+    used_moves: set[str] = set()
+    used_types: set[str] = set()
 
-    moves_df["score"] = moves_df.apply(score_move, axis=1)
-    moves_df["is_stab"] = moves_df["type"].apply(lambda move_type: move_type in pokemon_types)
+    def _take(type_name: str) -> bool:
+        candidates = TYPE_TO_MOVES.get(type_name, [])
+        for cand in candidates:
+            if cand["move"] in used_moves:
+                continue
+            selected.append({
+                "move": cand["move"],
+                "type": type_name,
+                "power": cand["power"],
+                "accuracy": cand["accuracy"],
+                "damage_class": "physical",  # placeholder; not displayed
+                "score": score_move(cand),
+            })
+            used_moves.add(cand["move"])
+            used_types.add(type_name)
+            return True
+        return False
 
-    selected_moves = []
-    used_types = set()
-
-    stab_moves = moves_df[moves_df["is_stab"]].sort_values(by="score", ascending=False)
-
-    if not stab_moves.empty:
-        best_stab = stab_moves.iloc[0].to_dict()
-        selected_moves.append(best_stab)
-        used_types.add(best_stab["type"])
-
-    coverage_moves = moves_df.sort_values(by="score", ascending=False)
-
-    for _, move in coverage_moves.iterrows():
-        if len(selected_moves) >= max_moves:
+    # STAB first — one move per native type.
+    for typ in pokemon_types:
+        if len(selected) >= max_moves:
             break
+        _take(typ)
 
-        if move["move"] in [m["move"] for m in selected_moves]:
+    # Coverage — fill remaining slots from the priority order, skipping STAB
+    # types we've already used.
+    for typ in _COVERAGE_TYPE_ORDER:
+        if len(selected) >= max_moves:
+            break
+        if typ in used_types:
             continue
+        _take(typ)
 
-        if move["type"] not in used_types:
-            selected_moves.append(move.to_dict())
-            used_types.add(move["type"])
-
-    return pd.DataFrame(selected_moves)
+    return pd.DataFrame(selected)
 
 
 def add_movesets_to_team(team, df, max_moves=4):

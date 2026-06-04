@@ -50,6 +50,79 @@ class TeamSlot:
         return asdict(self)
 
 
+_STAT_LABELS = ["HP", "Atk", "Def", "SpA", "SpD", "Spe"]
+
+# Words that look better in Showdown pastes when title-cased nicely.
+# Smogon chaos data sometimes uses compact lowercase like "brickbreak", which
+# Showdown's importer accepts but looks ugly. We expand the common cases.
+_HIDDEN_POWER_TYPES = {
+    "bug", "dark", "dragon", "electric", "fighting", "fire", "flying", "ghost",
+    "grass", "ground", "ice", "poison", "psychic", "rock", "steel", "water",
+}
+
+
+def _pretty_name(s: str) -> str:
+    """Best-effort title-casing for items / abilities / Pokemon names."""
+    if not s:
+        return s
+    return " ".join(part.capitalize() for part in s.replace("-", " ").split())
+
+
+def _format_move(move: str) -> str:
+    """Convert chaos move name into Showdown paste format.
+
+    Handles both the spaced form ("Hidden Power Flying") and the compact lowercase
+    form ("hiddenpowerflying") that some chaos exports use. Output is always:
+    'Hidden Power [Flying]' for HP moves.
+    """
+    if not move:
+        return move
+    raw = move.strip()
+    lower_compact = raw.lower().replace(" ", "").replace("-", "")
+    if lower_compact.startswith("hiddenpower") and len(lower_compact) > len("hiddenpower"):
+        elem = lower_compact[len("hiddenpower"):]
+        if elem in _HIDDEN_POWER_TYPES:
+            return f"Hidden Power [{elem.capitalize()}]"
+    # Already has spaces? Just title-case each word.
+    if " " in raw:
+        return " ".join(w.capitalize() for w in raw.split())
+    # No spaces: try to split common compound moves (rockslide, dragondance, etc.)
+    # by checking against a small dictionary of common heads.
+    heads = (
+        "rock", "dragon", "iron", "flame", "thunder", "ice", "fire", "stone",
+        "earth", "shadow", "psycho", "psyshic", "aqua", "leaf", "giga", "mega",
+        "hyper", "swords", "bullet", "body", "double", "self", "sleep", "calm",
+        "seismic", "wing", "drill", "leech", "mach", "close", "secret", "high",
+        "mud", "u", "v", "x",
+    )
+    low = raw.lower()
+    for head in sorted(heads, key=len, reverse=True):
+        if low.startswith(head) and len(low) > len(head):
+            return head.capitalize() + " " + low[len(head):].capitalize()
+    return raw.capitalize()
+
+
+def _format_spread(spread: str | None) -> tuple[str | None, str | None]:
+    """Parse 'Adamant:0/252/0/0/4/252' into ('Adamant', '252 Atk / 4 SpD / 252 Spe').
+
+    Returns (nature, ev_line). Either may be None if the spread is missing or
+    malformed (older gens often don't have meaningful EVs).
+    """
+    if not spread or ":" not in spread:
+        return None, None
+    nature, evs_raw = spread.split(":", 1)
+    parts = evs_raw.split("/")
+    if len(parts) != 6:
+        return nature.strip() or None, None
+    try:
+        evs = [int(p) for p in parts]
+    except ValueError:
+        return nature.strip() or None, None
+    pieces = [f"{v} {label}" for v, label in zip(evs, _STAT_LABELS) if v > 0]
+    ev_line = " / ".join(pieces) if pieces else None
+    return nature.strip() or None, ev_line
+
+
 @dataclass
 class TeamRecommendation:
     gen: int
@@ -66,6 +139,29 @@ class TeamRecommendation:
             "viability_score": self.viability_score,
             "members": [m.to_dict() for m in self.members],
         }
+
+    def to_showdown_paste(self) -> str:
+        """Render the team in Pokemon Showdown's importable team format."""
+        blocks: list[str] = []
+        for slot in self.members:
+            lines: list[str] = []
+            # Header: 'Name @ Item' (drop item for gens that have no real items)
+            name_display = _pretty_name(slot.name)
+            if slot.item and slot.item.lower() not in ("no item", "nothing"):
+                lines.append(f"{name_display} @ {_pretty_name(slot.item)}")
+            else:
+                lines.append(name_display)
+            if slot.ability and slot.ability.lower() not in ("no ability",):
+                lines.append(f"Ability: {_pretty_name(slot.ability)}")
+            nature, ev_line = _format_spread(slot.spread)
+            if ev_line:
+                lines.append(f"EVs: {ev_line}")
+            if nature:
+                lines.append(f"{nature} Nature")
+            for move in slot.moves[:4]:
+                lines.append(f"- {_format_move(move)}")
+            blocks.append("\n".join(lines))
+        return "\n\n".join(blocks) + "\n"
 
 
 # ---------- recommender ----------------------------------------------------------

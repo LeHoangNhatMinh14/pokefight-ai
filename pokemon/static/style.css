@@ -108,6 +108,62 @@ button:hover {
     font-weight: bold;
 }
 
+.notice {
+    background: #fff8e1;
+    border-left: 4px solid #f0b400;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 12px 0;
+    color: #5a4500;
+}
+
 ul {
     margin-top: 5px;
+}
+
+/* --- Pokémon autocomplete search --- */
+.autocomplete {
+    position: relative;
+    display: inline-block;
+    margin: 6px 10px 6px 0;
+}
+
+.autocomplete input[type="text"] {
+    margin: 0;
+    width: 240px;
+    box-sizing: border-box;
+}
+
+.suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 2px 0 0;
+    padding: 4px 0;
+    list-style: none;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.suggestion-item {
+    padding: 6px 12px;
+    cursor: pointer;
+    text-transform: capitalize;
+    font-size: 14px;
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+    background: #f0f0f0;
+}
+
+.suggestion-item strong {
+    color: #222;
+    font-weight: 700;
 }

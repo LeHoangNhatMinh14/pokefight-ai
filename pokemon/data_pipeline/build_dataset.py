@@ -68,12 +68,16 @@ def normalize_name(name: str) -> str:
 # ---------- chaos JSON discovery -------------------------------------------------
 
 _PATH_RE = re.compile(r"gen(?P<gen>\d+)(?P<tier>[a-z]+)-(?P<rating>\d+)\.json$")
+_TIER_RATING_RE = re.compile(r"(?P<tier>[a-z]+)-(?P<rating>\d+)\.json$")
+_GEN_DIR_RE = re.compile(r"gen(?P<gen>\d+)$")
 
 
 def discover_chaos_files(*roots: Path) -> list[tuple[Path, int, str, int]]:
-    """Walk roots looking for files named gen{N}{tier}-{rating}.json.
+    """Walk roots looking for chaos files.
 
-    Returns list of (path, gen, tier, rating).
+    Supports two layouts:
+      fixture style:   .../gen3ou-1500.json
+      fetcher style:   .../gen3/ou-1500.json   (gen in parent folder)
     """
     found: list[tuple[Path, int, str, int]] = []
     for root in roots:
@@ -81,9 +85,13 @@ def discover_chaos_files(*roots: Path) -> list[tuple[Path, int, str, int]]:
             continue
         for p in root.rglob("*.json"):
             m = _PATH_RE.search(p.name)
-            if not m:
+            if m:
+                found.append((p, int(m["gen"]), m["tier"], int(m["rating"])))
                 continue
-            found.append((p, int(m["gen"]), m["tier"], int(m["rating"])))
+            m2 = _TIER_RATING_RE.search(p.name)
+            parent_match = _GEN_DIR_RE.match(p.parent.name)
+            if m2 and parent_match:
+                found.append((p, int(parent_match["gen"]), m2["tier"], int(m2["rating"])))
     # When multiple ratings exist for the same (gen, tier) keep the highest rating
     # (more competitive ladder).
     best: dict[tuple[int, str], tuple[Path, int, str, int]] = {}

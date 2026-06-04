@@ -1,6 +1,7 @@
+from functools import lru_cache
 from pathlib import Path
 
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 
 from recommender import (
     load_data,
@@ -13,6 +14,31 @@ from recommender import (
 app = Flask(__name__)
 
 df = load_data()
+
+
+@lru_cache(maxsize=1)
+def get_all_pokemon_names():
+    """Return the sorted list of every Pokemon name in the dataset.
+
+    Cached for the lifetime of the process so the autocomplete endpoint
+    is a constant-time lookup after the first call.
+    """
+    names = df["name"].dropna().astype(str).tolist()
+    # Sort case-insensitively but keep the dataset's original casing for display.
+    return sorted(names, key=str.lower)
+
+
+@app.route("/api/pokemon_names")
+def api_pokemon_names():
+    """Return all pokemon names (and optionally filter by a query prefix/substring)."""
+    query = (request.args.get("q") or "").strip().lower()
+    names = get_all_pokemon_names()
+    if query:
+        # Prefix matches first, then substring matches (deduped, preserving order).
+        prefix = [n for n in names if n.lower().startswith(query)]
+        substring = [n for n in names if query in n.lower() and n not in prefix]
+        names = prefix + substring
+    return jsonify(names)
 
 # Lazily load the chaos recommender (requires data_pipeline outputs + trained model).
 _chaos_rec = None
@@ -107,6 +133,8 @@ def index():
     team = None
     summary = None
     error = None
+    showdown_paste = None
+    notice = None  # informational (non-error) message, e.g. fallback notification
 
     metagames = list_available_metagames()
     chaos_available = bool(metagames)
@@ -137,10 +165,12 @@ def index():
                 summary = _summarize_chaos_team(team_data, result.gen, result.tier)
                 summary["viability_score"] = round(result.viability_score, 3)
                 team = team_data
-            except ValueError as e:
-                error = (
-                    "No Smogon chaos data found for '" + pokemon_name +
-                    "' - falling back to type-synergy recommender. (" + str(e) + ")"
+                showdown_paste = result.to_showdown_paste()
+            except ValueError:
+                notice = (
+                    f"'{pokemon_name.title()}' has no Smogon usage data — "
+                    "showing a type-synergy team instead. The metagame dropdown "
+                    "doesn't apply here."
                 )
                 mode = "synergy"
 
@@ -171,9 +201,11 @@ def index():
         team=team,
         summary=summary,
         error=error,
+        notice=notice,
         metagames=metagames,
         chaos_available=chaos_available,
         chaos_message=chaos_message,
+        showdown_paste=showdown_paste,
     )
 
 

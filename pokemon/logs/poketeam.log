@@ -1,0 +1,22 @@
+10:43:28 INFO  [recommenders.recommender] PokeAPI disk cache enabled at /sessions/serene-modest-rubin/mnt/pokemon/.cache/pokeapi.sqlite
+10:43:28 INFO  [app] startup synergy_pokemon=720
+10:43:30 INFO  [app] chaos recommender loaded metagames=14 (gen1ou, gen1ubers, gen2ou, gen2ubers, gen3ou, gen3ubers, gen4ou, gen4ubers, gen5lc, gen5ou, gen5ubers, gen6doublesou, gen6nu, gen6ou)
+10:43:30 INFO  [app] request mode=chaos pokemon=snorlax
+10:43:30 INFO  [recommenders.chaos_recommender] build_team favorite=snorlax gen=1 tier=ou team_size=6 max_leg=None
+10:43:31 INFO  [recommenders.chaos_recommender] build_team done favorite=snorlax gen=1 tier=ou viability=0.388 duration=1.37s team=snorlax,tauros,rhydon,exeggutor,starmie,chansey
+10:43:31 INFO  [app] response chaos pokemon=snorlax gen=1 tier=ou viability=0.388 duration=1.37s
+10:43:31 INFO  [app] request mode=chaos pokemon=rayquaza
+10:43:31 INFO  [recommenders.chaos_recommender] build_team favorite=rayquaza gen=6 tier=ubers team_size=6 max_leg=None
+10:43:32 INFO  [recommenders.chaos_recommender] build_team done favorite=rayquaza gen=4 tier=ubers viability=0.326 duration=1.29s team=rayquaza,bronzong,kyogre,dialga,palkia,groudon
+10:43:32 INFO  [app] response chaos pokemon=rayquaza gen=4 tier=ubers viability=0.326 duration=1.29s
+10:43:32 INFO  [app] request mode=chaos pokemon=fakemon-xyz
+10:43:32 INFO  [recommenders.chaos_recommender] build_team favorite=fakemon-xyz gen=None tier=None team_size=6 max_leg=None
+10:43:32 WARNING [app] chaos miss pokemon=fakemon-xyz gen=None tier=None falling_back_to=synergy reason='fakemon-xyz' has no Smogon chaos data in any loaded metagame.
+10:43:32 ERROR [app] synergy crash pokemon=fakemon-xyz playstyle=balanced
+Traceback (most recent call last):
+  File "/sessions/serene-modest-rubin/mnt/pokemon/app.py", line 188, in index
+    result = recommend_teammates(
+  File "/sessions/serene-modest-rubin/mnt/pokemon/recommenders/recommender.py", line 114, in recommend_teammates
+    raise ValueError(f"{selected_pokemon} not found in dataset.")
+ValueError: fakemon-xyz not found in dataset.
+

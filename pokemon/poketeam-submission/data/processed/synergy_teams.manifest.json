@@ -1,0 +1,21 @@
+{
+  "input_csv": "data\\processed\\pokemon_final.csv",
+  "fingerprint": "4d8d14ceaf21ff7f",
+  "lookahead_depth": 1,
+  "playstyles": [
+    "balanced",
+    "offense",
+    "stall",
+    "tank"
+  ],
+  "max_legendaries_set": [
+    0,
+    1,
+    2,
+    6
+  ],
+  "combos_attempted": 11520,
+  "combos_in_table_after_run": 11520,
+  "completed_at": "2026-06-04T21:42:25.534703",
+  "errors_sample": []
+}

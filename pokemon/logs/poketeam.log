@@ -20,3 +20,64 @@ Traceback (most recent call last):
     raise ValueError(f"{selected_pokemon} not found in dataset.")
 ValueError: fakemon-xyz not found in dataset.
 
+19:50:17 INFO  [precompute_synergy_teams] input fingerprint=4d8d14ceaf21ff7f
+19:50:18 INFO  [precompute_synergy_teams] dataset rows=720 distinct=720
+19:50:18 INFO  [precompute_synergy_teams] computing 11520 combos with 15 workers (lookahead=1)
+19:57:59 INFO  [precompute_synergy_teams] progress 200/11520 (2%) 0.43 teams/s ETA=26144s errors=0
+20:04:26 INFO  [precompute_synergy_teams] progress 400/11520 (3%) 0.47 teams/s ETA=23579s errors=0
+20:10:31 INFO  [precompute_synergy_teams] progress 600/11520 (5%) 0.49 teams/s ETA=22085s errors=0
+20:18:30 INFO  [precompute_synergy_teams] progress 800/11520 (7%) 0.47 teams/s ETA=22681s errors=0
+20:19:53 INFO  [precompute_synergy_teams] progress 1000/11520 (9%) 0.56 teams/s ETA=18683s errors=0
+20:21:19 INFO  [precompute_synergy_teams] progress 1200/11520 (10%) 0.64 teams/s ETA=16009s errors=0
+20:22:50 INFO  [precompute_synergy_teams] progress 1400/11520 (12%) 0.72 teams/s ETA=14116s errors=0
+20:24:08 INFO  [precompute_synergy_teams] progress 1600/11520 (14%) 0.79 teams/s ETA=12591s errors=0
+20:25:24 INFO  [precompute_synergy_teams] progress 1800/11520 (16%) 0.85 teams/s ETA=11376s errors=0
+20:26:46 INFO  [precompute_synergy_teams] progress 2000/11520 (17%) 0.91 teams/s ETA=10418s errors=0
+20:28:03 INFO  [precompute_synergy_teams] progress 2200/11520 (19%) 0.97 teams/s ETA=9595s errors=0
+20:29:16 INFO  [precompute_synergy_teams] progress 2400/11520 (21%) 1.03 teams/s ETA=8886s errors=0
+20:30:38 INFO  [precompute_synergy_teams] progress 2600/11520 (23%) 1.07 teams/s ETA=8303s errors=0
+20:31:56 INFO  [precompute_synergy_teams] progress 2800/11520 (24%) 1.12 teams/s ETA=7780s errors=0
+20:34:43 INFO  [precompute_synergy_teams] progress 3000/11520 (26%) 1.13 teams/s ETA=7570s errors=0
+20:38:44 INFO  [precompute_synergy_teams] progress 3200/11520 (28%) 1.10 teams/s ETA=7557s errors=0
+20:40:10 INFO  [precompute_synergy_teams] progress 3400/11520 (30%) 1.14 teams/s ETA=7148s errors=0
+20:41:27 INFO  [precompute_synergy_teams] progress 3600/11520 (31%) 1.17 teams/s ETA=6753s errors=0
+20:42:50 INFO  [precompute_synergy_teams] progress 3800/11520 (33%) 1.21 teams/s ETA=6404s errors=0
+20:44:11 INFO  [precompute_synergy_teams] progress 4000/11520 (35%) 1.24 teams/s ETA=6079s errors=0
+20:45:27 INFO  [precompute_synergy_teams] progress 4200/11520 (36%) 1.27 teams/s ETA=5768s errors=0
+20:46:47 INFO  [precompute_synergy_teams] progress 4400/11520 (38%) 1.30 teams/s ETA=5484s errors=0
+20:48:10 INFO  [precompute_synergy_teams] progress 4600/11520 (40%) 1.32 teams/s ETA=5224s errors=0
+20:49:26 INFO  [precompute_synergy_teams] progress 4800/11520 (42%) 1.35 teams/s ETA=4968s errors=0
+20:50:47 INFO  [precompute_synergy_teams] progress 5000/11520 (43%) 1.38 teams/s ETA=4733s errors=0
+20:52:13 INFO  [precompute_synergy_teams] progress 5200/11520 (45%) 1.40 teams/s ETA=4516s errors=0
+20:57:56 INFO  [precompute_synergy_teams] progress 5400/11520 (47%) 1.33 teams/s ETA=4600s errors=0
+21:00:13 INFO  [precompute_synergy_teams] progress 5600/11520 (49%) 1.33 teams/s ETA=4436s errors=0
+21:01:41 INFO  [precompute_synergy_teams] progress 5800/11520 (50%) 1.35 teams/s ETA=4225s errors=0
+21:03:08 INFO  [precompute_synergy_teams] progress 6000/11520 (52%) 1.37 teams/s ETA=4021s errors=0
+21:04:32 INFO  [precompute_synergy_teams] progress 6200/11520 (54%) 1.39 teams/s ETA=3822s errors=0
+21:06:02 INFO  [precompute_synergy_teams] progress 6400/11520 (56%) 1.41 teams/s ETA=3635s errors=0
+21:07:22 INFO  [precompute_synergy_teams] progress 6600/11520 (57%) 1.43 teams/s ETA=3448s errors=0
+21:08:43 INFO  [precompute_synergy_teams] progress 6800/11520 (59%) 1.45 teams/s ETA=3266s errors=0
+21:10:15 INFO  [precompute_synergy_teams] progress 7000/11520 (61%) 1.46 teams/s ETA=3098s errors=0
+21:11:40 INFO  [precompute_synergy_teams] progress 7200/11520 (62%) 1.47 teams/s ETA=2930s errors=0
+21:13:04 INFO  [precompute_synergy_teams] progress 7400/11520 (64%) 1.49 teams/s ETA=2765s errors=0
+21:14:29 INFO  [precompute_synergy_teams] progress 7600/11520 (66%) 1.50 teams/s ETA=2605s errors=0
+21:15:49 INFO  [precompute_synergy_teams] progress 7800/11520 (68%) 1.52 teams/s ETA=2447s errors=0
+21:17:06 INFO  [precompute_synergy_teams] progress 8000/11520 (69%) 1.54 teams/s ETA=2292s errors=0
+21:18:28 INFO  [precompute_synergy_teams] progress 8200/11520 (71%) 1.55 teams/s ETA=2142s errors=0
+21:19:48 INFO  [precompute_synergy_teams] progress 8400/11520 (73%) 1.56 teams/s ETA=1995s errors=0
+21:21:07 INFO  [precompute_synergy_teams] progress 8600/11520 (75%) 1.58 teams/s ETA=1850s errors=0
+21:22:30 INFO  [precompute_synergy_teams] progress 8800/11520 (76%) 1.59 teams/s ETA=1710s errors=0
+21:23:59 INFO  [precompute_synergy_teams] progress 9000/11520 (78%) 1.60 teams/s ETA=1574s errors=0
+21:25:23 INFO  [precompute_synergy_teams] progress 9200/11520 (80%) 1.61 teams/s ETA=1439s errors=0
+21:26:49 INFO  [precompute_synergy_teams] progress 9400/11520 (82%) 1.62 teams/s ETA=1306s errors=0
+21:28:22 INFO  [precompute_synergy_teams] progress 9600/11520 (83%) 1.63 teams/s ETA=1177s errors=0
+21:30:02 INFO  [precompute_synergy_teams] progress 9800/11520 (85%) 1.64 teams/s ETA=1050s errors=0
+21:31:28 INFO  [precompute_synergy_teams] progress 10000/11520 (87%) 1.65 teams/s ETA=923s errors=0
+21:32:56 INFO  [precompute_synergy_teams] progress 10200/11520 (89%) 1.66 teams/s ETA=797s errors=0
+21:34:25 INFO  [precompute_synergy_teams] progress 10400/11520 (90%) 1.66 teams/s ETA=673s errors=0
+21:35:52 INFO  [precompute_synergy_teams] progress 10600/11520 (92%) 1.67 teams/s ETA=550s errors=0
+21:37:16 INFO  [precompute_synergy_teams] progress 10800/11520 (94%) 1.68 teams/s ETA=428s errors=0
+21:38:38 INFO  [precompute_synergy_teams] progress 11000/11520 (95%) 1.69 teams/s ETA=307s errors=0
+21:40:10 INFO  [precompute_synergy_teams] progress 11200/11520 (97%) 1.70 teams/s ETA=188s errors=0
+21:41:41 INFO  [precompute_synergy_teams] progress 11400/11520 (99%) 1.71 teams/s ETA=70s errors=0
+21:42:25 INFO  [precompute_synergy_teams] done. wrote data\processed\synergy_teams.parquet and data\processed\synergy_teams.manifest.json. errors=0 total=6727.5s

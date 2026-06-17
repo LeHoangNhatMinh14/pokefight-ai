@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PokéTeam AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>PokéTeam AI</h1>
+        <p>Generate a Pokémon team based on playstyle, type effectiveness, moves, and legendary limits.</p>
+    </div>
+
+    <form method="POST" autocomplete="off">
+        <label for="pokemon-search">Choose Pokémon:</label>
+        <div class="autocomplete">
+            <input
+                type="text"
+                id="pokemon-search"
+                name="pokemon"
+                placeholder="Start typing a name…"
+                autocomplete="off"
+                spellcheck="false"
+                required>
+            <ul id="pokemon-suggestions" class="suggestions" hidden></ul>
+        </div>
+
+        <label>Mode:</label>
+        <select name="mode">
+            {% if chaos_available %}
+                <option value="chaos">Smogon usage (Gen 1–6, all tiers)</option>
+            {% endif %}
+            <option value="synergy">Type / role synergy (no Smogon data)</option>
+        </select>
+
+        {% if chaos_available %}
+            <label>Metagame (Smogon mode):</label>
+            <select name="metagame">
+                <option value="">Auto-detect best fit</option>
+                {% for gen, tier in metagames %}
+                    <option value="{{ gen }}|{{ tier }}">Gen {{ gen }} {{ tier|upper }}</option>
+                {% endfor %}
+            </select>
+        {% else %}
+            {% if chaos_message %}
+                <p class="error" style="font-size: 0.9em">{{ chaos_message }}</p>
+            {% endif %}
+        {% endif %}
+
+        <label>Playstyle (synergy mode only):</label>
+        <select name="playstyle">
+            <option value="balanced">Balanced</option>
+            <option value="offense">Hyper Offense</option>
+            <option value="stall">Stall</option>
+            <option value="tank">Tank</option>
+        </select>
+
+        <button type="submit">Generate Team</button>
+    </form>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if notice %}
+        <p class="notice">{{ notice }}</p>
+    {% endif %}
+
+    {% if summary %}
+        <div class="summary">
+            <h2>Team Summary</h2>
+
+            <div class="summary-grid">
+                <div class="summary-box"><strong>Playstyle:</strong><br>{{ summary.playstyle }}</div>
+                <div class="summary-box"><strong>Legendaries:</strong><br>{{ summary.legendary_count }}</div>
+                <div class="summary-box"><strong>Average Speed:</strong><br>{{ summary.average_speed }}</div>
+                <div class="summary-box"><strong>Average Attack:</strong><br>{{ summary.average_attack }}</div>
+                <div class="summary-box"><strong>Average Special Attack:</strong><br>{{ summary.average_sp_attack }}</div>
+                <div class="summary-box"><strong>Average Bulk:</strong><br>{{ summary.average_bulk }}</div>
+            </div>
+
+            <h3>Common Weaknesses</h3>
+            {% for weakness, count in summary.common_weaknesses.items() %}
+                <span class="tag">{{ weakness }}: {{ count }}</span>
+            {% endfor %}
+
+            <h3>Role Distribution</h3>
+            {% for role, count in summary.role_distribution.items() %}
+                <span class="tag">{{ role }}: {{ count }}</span>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if team %}
+        <h2>Recommended Team</h2>
+
+        {% if showdown_paste %}
+            <div class="showdown-export" style="margin: 1em 0; padding: 1em; background: #f4f6f8; border-radius: 6px;">
+                <button type="button" id="copy-showdown" style="padding: 0.5em 1em; cursor: pointer; font-weight: bold;">
+                    Copy team to Pokemon Showdown
+                </button>
+                <span id="copy-status" style="margin-left: 1em; color: green;"></span>
+                <details style="margin-top: 0.5em;">
+                    <summary style="cursor: pointer;">Show team paste</summary>
+                    <pre id="showdown-paste" style="background: white; padding: 1em; margin-top: 0.5em; border: 1px solid #ddd; border-radius: 4px; overflow-x: auto; font-family: monospace;">{{ showdown_paste }}</pre>
+                </details>
+                <p style="font-size: 0.85em; color: #555; margin-top: 0.5em;">
+                    Paste this at <a href="https://play.pokemonshowdown.com/teambuilder" target="_blank">play.pokemonshowdown.com/teambuilder</a> &rarr; Import/Export to use this team in real battles.
+                </p>
+            </div>
+            <script>
+              (function () {
+                var btn = document.getElementById("copy-showdown");
+                var status = document.getElementById("copy-status");
+                var pasteEl = document.getElementById("showdown-paste");
+                if (!btn || !pasteEl) return;
+                btn.addEventListener("click", function () {
+                  var text = pasteEl.textContent;
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function () {
+                      status.textContent = "Copied!";
+                      setTimeout(function () { status.textContent = ""; }, 2000);
+                    });
+                  } else {
+                    // Fallback for older browsers
+                    var ta = document.createElement("textarea");
+                    ta.value = text;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(ta);
+                    status.textContent = "Copied!";
+                    setTimeout(function () { status.textContent = ""; }, 2000);
+                  }
+                });
+              })();
+            </script>
+        {% endif %}
+
+        <div class="team-grid">
+            {% for pokemon in team %}
+                <div class="pokemon-card">
+                    <h3>{{ pokemon.name }}</h3>
+
+                    <p>
+                        <strong>Types:</strong>
+                        <span class="tag">{{ pokemon.type1 }}</span>
+                        {% if pokemon.type2 %}
+                            <span class="tag">{{ pokemon.type2 }}</span>
+                        {% endif %}
+                    </p>
+
+                    <p><strong>Role:</strong> {{ pokemon.role }}</p>
+                    <p><strong>Legendary:</strong> {{ pokemon.is_legendary }}</p>
+                    {% if pokemon.usage is defined and pokemon.usage %}
+                        <p><strong>Usage:</strong> {{ (pokemon.usage * 100)|round(1) }}%</p>
+                    {% endif %}
+                    {% if pokemon.item %}
+                        <p><strong>Item:</strong> {{ pokemon.item }}</p>
+                    {% endif %}
+                    {% if pokemon.ability %}
+                        <p><strong>Ability:</strong> {{ pokemon.ability }}</p>
+                    {% endif %}
+                    {% if pokemon.spread %}
+                        <p><strong>Spread:</strong> <code>{{ pokemon.spread }}</code></p>
+                    {% endif %}
+
+                    <h4>Stats</h4>
+                    <ul>
+                        <li>HP: {{ pokemon.hp }}</li>
+                        <li>Attack: {{ pokemon.attack }}</li>
+                        <li>Defense: {{ pokemon.defense }}</li>
+                        <li>Special Attack: {{ pokemon.sp_attack }}</li>
+                        <li>Special Defense: {{ pokemon.sp_defense }}</li>
+                        <li>Speed: {{ pokemon.speed }}</li>
+                    </ul>
+
+                    <h4>Weaknesses</h4>
+                    {% for weakness in pokemon.weaknesses %}
+                        <span class="tag">{{ weakness }}</span>
+                    {% endfor %}
+
+                    <h4>Recommended Moves</h4>
+                    {% for move in pokemon.recommended_moves %}
+                        <span class="tag">{{ move }}</span>
+                    {% endfor %}
+
+                    <div class="reason">
+                        <strong>Why this Pokémon?</strong><br>
+                        {{ pokemon.reason }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+</div>
+
+<script>
+(function () {
+    const input = document.getElementById("pokemon-search");
+    const list = document.getElementById("pokemon-suggestions");
+    if (!input || !list) return;
+
+    const MAX_RESULTS = 10;
+    let allNames = [];
+    let activeIndex = -1;
+
+    // Fetch the full names list once on load. Server caches it via lru_cache,
+    // and we cache client-side so repeat visits don't even need the round-trip.
+    async function loadNames() {
+        try {
+            const cached = sessionStorage.getItem("pokemon_names_v1");
+            if (cached) {
+                allNames = JSON.parse(cached);
+                return;
+            }
+        } catch (e) { /* sessionStorage may be unavailable; ignore */ }
+
+        try {
+            const res = await fetch("/api/pokemon_names");
+            if (!res.ok) return;
+            allNames = await res.json();
+            try { sessionStorage.setItem("pokemon_names_v1", JSON.stringify(allNames)); } catch (e) {}
+        } catch (e) {
+            // Network failure — fall back to no suggestions; the form still works.
+        }
+    }
+
+    function filterNames(query) {
+        const q = query.trim().toLowerCase();
+        if (!q) return [];
+        const prefix = [];
+        const substring = [];
+        for (const name of allNames) {
+            const lower = name.toLowerCase();
+            if (lower.startsWith(q)) prefix.push(name);
+            else if (lower.includes(q)) substring.push(name);
+            if (prefix.length >= MAX_RESULTS) break;
+        }
+        return prefix.concat(substring).slice(0, MAX_RESULTS);
+    }
+
+    function highlight(name, query) {
+        const q = query.trim();
+        if (!q) return name;
+        const lower = name.toLowerCase();
+        const idx = lower.indexOf(q.toLowerCase());
+        if (idx === -1) return name;
+        const before = name.slice(0, idx);
+        const match = name.slice(idx, idx + q.length);
+        const after = name.slice(idx + q.length);
+        return before + "<strong>" + match + "</strong>" + after;
+    }
+
+    function render(matches, query) {
+        list.innerHTML = "";
+        if (matches.length === 0) {
+            list.hidden = true;
+            activeIndex = -1;
+            return;
+        }
+        matches.forEach((name, i) => {
+            const li = document.createElement("li");
+            li.className = "suggestion-item" + (i === activeIndex ? " active" : "");
+            li.innerHTML = highlight(name, query);
+            li.addEventListener("mousedown", (ev) => {
+                // mousedown (not click) so the input doesn't blur away first.
+                ev.preventDefault();
+                choose(name);
+            });
+            list.appendChild(li);
+        });
+        list.hidden = false;
+    }
+
+    function choose(name) {
+        input.value = name;
+        list.hidden = true;
+        activeIndex = -1;
+    }
+
+    function currentMatches() {
+        return Array.from(list.querySelectorAll(".suggestion-item")).map(li => li.textContent);
+    }
+
+    input.addEventListener("input", () => {
+        activeIndex = -1;
+        const matches = filterNames(input.value);
+        render(matches, input.value);
+    });
+
+    input.addEventListener("keydown", (ev) => {
+        const items = list.querySelectorAll(".suggestion-item");
+        if (list.hidden || items.length === 0) return;
+
+        if (ev.key === "ArrowDown") {
+            ev.preventDefault();
+            activeIndex = (activeIndex + 1) % items.length;
+        } else if (ev.key === "ArrowUp") {
+            ev.preventDefault();
+            activeIndex = (activeIndex - 1 + items.length) % items.length;
+        } else if (ev.key === "Enter") {
+            if (activeIndex >= 0) {
+                ev.preventDefault();
+                choose(items[activeIndex].textContent);
+                return;
+            }
+            // No selection? Let the form submit normally.
+            return;
+        } else if (ev.key === "Escape") {
+            list.hidden = true;
+            activeIndex = -1;
+            return;
+        } else {
+            return;
+        }
+
+        items.forEach((li, i) => li.classList.toggle("active", i === activeIndex));
+        if (activeIndex >= 0) items[activeIndex].scrollIntoView({ block: "nearest" });
+    });
+
+    input.addEventListener("focus", () => {
+        if (input.value.trim()) {
+            render(filterNames(input.value), input.value);
+        }
+    });
+
+    input.addEventListener("blur", () => {
+        // Slight delay so click/mousedown on a suggestion still fires.
+        setTimeout(() => { list.hidden = true; }, 120);
+    });
+
+    loadNames();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+{
+  "info": {"team type": null, "cutoff": 1500, "metagame": "gen1ou", "number of battles": 20000},
+  "data": {
+    "Tauros": {
+      "Raw count": 18000, "usage": 0.85, "Viability Ceiling": [5, 9000, 0, 0],
+      "Abilities": {"No Ability": 18000},
+      "Items": {"No Item": 18000},
+      "Spreads": {"Serious:252/252/252/252/252/252": 18000},
+      "Moves": {"Body Slam": 17000, "Hyper Beam": 16000, "Earthquake": 13000, "Blizzard": 9500},
+      "Teammates": {"Snorlax": 14000, "Chansey": 12000, "Exeggutor": 10000, "Starmie": 11000, "Rhydon": 7000, "Alakazam": 8000},
+      "Checks and Counters": {"Rhydon": [0.4, 0.55, 0.45]},
+      "Happiness": {"255": 18000}
+    },
+    "Snorlax": {
+      "Raw count": 17500, "usage": 0.83, "Viability Ceiling": [5, 8500, 0, 0],
+      "Abilities": {"No Ability": 17500}, "Items": {"No Item": 17500},
+      "Spreads": {"Serious:252/252/252/252/252/252": 17500},
+      "Moves": {"Body Slam": 16500, "Earthquake": 13500, "Hyper Beam": 11500, "Self-Destruct": 9000, "Rest": 6000},
+      "Teammates": {"Tauros": 14000, "Chansey": 11000, "Exeggutor": 10500, "Starmie": 10000, "Alakazam": 7500},
+      "Checks and Counters": {"Gengar": [0.5, 0.65, 0.4]},
+      "Happiness": {"255": 17500}
+    },
+    "Chansey": {
+      "Raw count": 14000, "usage": 0.66, "Viability Ceiling": [5, 6800, 0, 0],
+      "Abilities": {"No Ability": 14000}, "Items": {"No Item": 14000},
+      "Spreads": {"Serious:252/252/252/252/252/252": 14000},
+      "Moves": {"Soft-Boiled": 13000, "Ice Beam": 11000, "Thunder Wave": 10000, "Seismic Toss": 6500, "Reflect": 5500},
+      "Teammates": {"Tauros": 12000, "Snorlax": 11000, "Exeggutor": 9000, "Starmie": 8500, "Rhydon": 6000, "Alakazam": 7000},
+      "Checks and Counters": {"Tauros": [0.55, 0.7, 0.35]},
+      "Happiness": {"255": 14000}
+    },
+    "Exeggutor": {
+      "Raw count": 13500, "usage": 0.64,
+      "Abilities": {"No Ability": 13500}, "Items": {"No Item": 13500},
+      "Spreads": {"Serious:252/252/252/252/252/252": 13500},
+      "Moves": {"Psychic": 12500, "Sleep Powder": 11500, "Explosion": 9500, "Stun Spore": 5500, "Mega Drain": 3500},
+      "Teammates": {"Tauros": 10000, "Snorlax": 10500, "Chansey": 9000, "Starmie": 7500, "Alakazam": 6500},
+      "Happiness": {"255": 13500}
+    },
+    "Starmie": {
+      "Raw count": 13000, "usage": 0.62,
+      "Abilities": {"No Ability": 13000}, "Items": {"No Item": 13000},
+      "Spreads": {"Serious:252/252/252/252/252/252": 13000},
+      "Moves": {"Thunderbolt": 11500, "Recover": 10500, "Thunder Wave": 9000, "Blizzard": 8000, "Psychic": 4000},
+      "Teammates": {"Tauros": 11000, "Snorlax": 10000, "Chansey": 8500, "Exeggutor": 7500, "Alakazam": 5500},
+      "Happiness": {"255": 13000}
+    },
+    "Alakazam": {
+      "Raw count": 9500, "usage": 0.45,
+      "Abilities": {"No Ability": 9500}, "Items": {"No Item": 9500},
+      "Spreads": {"Serious:252/252/252/252/252/252": 9500},
+      "Moves": {"Psychic": 9000, "Recover": 8000, "Thunder Wave": 6500, "Seismic Toss": 4500, "Reflect": 3500},
+      "Teammates": {"Tauros": 8000, "Snorlax": 7500, "Chansey": 7000, "Exeggutor": 6500, "Starmie": 5500},
+      "Happiness": {"255": 9500}
+    },
+    "Rhydon": {
+      "Raw count": 7500, "usage": 0.36,
+      "Abilities": {"No Ability": 7500}, "Items": {"No Item": 7500},
+      "Spreads": {"Serious:252/252/252/252/252/252": 7500},
+      "Moves": {"Earthquake": 7000, "Rock Slide": 6500, "Body Slam": 5000, "Substitute": 3500},
+      "Teammates": {"Tauros": 7000, "Snorlax": 6500, "Chansey": 6000, "Exeggutor": 4500, "Starmie": 3500},
+      "Happiness": {"255": 7500}
+    },
+    "Gengar": {
+      "Raw count": 6500, "usage": 0.31,
+      "Abilities": {"No Ability": 6500}, "Items": {"No Item": 6500},
+      "Spreads": {"Serious:252/252/252/252/252/252": 6500},
+      "Moves": {"Thunderbolt": 5500, "Hypnosis": 5000, "Mega Drain": 4500, "Explosion": 4000, "Night Shade": 2500},
+      "Teammates": {"Snorlax": 5500, "Tauros": 5000, "Chansey": 4500, "Exeggutor": 3500, "Starmie": 3500},
+      "Happiness": {"255": 6500}
+    }
+  }
+}

@@ -1,4 +1,0 @@
-*.lgb -text
-*.parquet -text
-*.sqlite -text
-*.pyc -text
